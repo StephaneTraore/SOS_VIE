@@ -5,7 +5,7 @@ const connectDB = require('./src/config/db');
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0',  () => {
     console.log(`🚨 SOS Secours API démarrée sur http://localhost:${PORT}`);
   });
 });
