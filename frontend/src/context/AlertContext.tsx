@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import toast from 'react-hot-toast';
 import { Alert, AlertStatus, AlertType, AlertPriority, ServiceType, User } from '../types';
 import { alertService } from '../services/alertService';
 import { useAuth } from './AuthContext';
@@ -71,30 +72,36 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateAlertStatus = useCallback((id: string, status: AlertStatus, notes?: string) => {
+    const previous = alerts;
     // Optimistic update
     setAlerts(prev =>
       prev.map(a => a.id === id
         ? { ...a, status, notes: notes !== undefined ? notes : a.notes, updatedAt: new Date().toISOString() }
         : a)
     );
-    // Sync to API in background
     alertService.updateStatus(id, status, notes)
       .then(updated => setAlerts(prev => prev.map(a => a.id === id ? updated : a)))
-      .catch(() => {});
-  }, []);
+      .catch((err: any) => {
+        setAlerts(previous);
+        toast.error(err?.message || 'Impossible de mettre à jour le statut');
+      });
+  }, [alerts]);
 
   const assignAlert = useCallback((alertId: string, responderId: string, responder?: User) => {
+    const previous = alerts;
     // Optimistic update
     setAlerts(prev =>
       prev.map(a => a.id === alertId
         ? { ...a, status: 'assigned' as AlertStatus, responder: responder ?? a.responder, updatedAt: new Date().toISOString() }
         : a)
     );
-    // Sync to API in background
     alertService.assign(alertId, responderId)
       .then(updated => setAlerts(prev => prev.map(a => a.id === alertId ? updated : a)))
-      .catch(() => {});
-  }, []);
+      .catch((err: any) => {
+        setAlerts(previous);
+        toast.error(err?.message || 'Impossible d\'assigner l\'alerte');
+      });
+  }, [alerts]);
 
   const getMyAlerts = useCallback((userId: string) =>
     alerts.filter(a => a.citizen.id === userId),

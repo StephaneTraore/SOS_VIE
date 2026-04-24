@@ -84,8 +84,8 @@ export default function CreateAlertPage() {
       setSuccess(true);
       toast.success('Alerte envoyée ! Les secours sont prévenus.');
       setTimeout(() => navigate('/citizen/history'), 2500);
-    } catch {
-      toast.error('Erreur lors de l\'envoi. Réessayez.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de l\'envoi. Réessayez.');
     } finally {
       setLoading(false);
     }

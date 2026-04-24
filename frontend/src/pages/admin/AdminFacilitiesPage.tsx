@@ -50,8 +50,8 @@ export default function AdminFacilitiesPage() {
     try {
       const data = await facilityService.getAll();
       setFacilities(data);
-    } catch {
-      toast.error('Impossible de charger les établissements');
+    } catch (err: any) {
+      toast.error(err?.message || 'Impossible de charger les établissements');
     } finally {
       setLoading(false);
     }
@@ -124,7 +124,7 @@ export default function AdminFacilitiesPage() {
       setShowForm(false);
       setForm(emptyForm);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Erreur lors de l\'enregistrement');
+      toast.error(err?.message || 'Erreur lors de l\'enregistrement');
     } finally {
       setSubmitting(false);
     }
@@ -137,8 +137,8 @@ export default function AdminFacilitiesPage() {
       setFacilities(p => p.filter(f => f.id !== deleting.id));
       toast.success('Établissement supprimé');
       setDeleting(null);
-    } catch {
-      toast.error('Erreur lors de la suppression');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de la suppression');
     }
   };
 

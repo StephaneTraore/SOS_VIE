@@ -130,8 +130,8 @@ export default function NearbyFacilitiesPage() {
       });
       toast.success(`Alerte envoyée à ${selected.name} !`);
       setTimeout(() => navigate('/citizen/history'), 2000);
-    } catch {
-      toast.error('Erreur lors de l\'envoi. Réessayez.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de l\'envoi. Réessayez.');
     } finally {
       setLoading(false);
     }

@@ -73,8 +73,8 @@ export default function AdminUsersPage() {
     try {
       const data = await userService.getAll();
       setUsers(data);
-    } catch {
-      toast.error('Impossible de charger les utilisateurs');
+    } catch (err: any) {
+      toast.error(err?.message || 'Impossible de charger les utilisateurs');
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +89,8 @@ export default function AdminUsersPage() {
       const updated = await userService.toggleActive(id, !current);
       setUsers(prev => prev.map(u => u.id === id ? updated : u));
       toast.success(`Compte ${!current ? 'activé' : 'désactivé'}.`);
-    } catch {
-      toast.error('Erreur lors de la mise à jour du statut');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de la mise à jour du statut');
     }
   };
 
@@ -110,7 +110,7 @@ export default function AdminUsersPage() {
       setNewUser(emptyForm);
       setShowPwd(false);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Erreur lors de la création');
+      toast.error(err?.message || 'Erreur lors de la création');
     } finally {
       setSubmitting(false);
     }

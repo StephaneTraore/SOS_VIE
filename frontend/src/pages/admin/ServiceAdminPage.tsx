@@ -52,7 +52,7 @@ export default function ServiceAdminPage() {
     try {
       const data = await userService.getAll();
       setAgents(data);
-    } catch { toast.error('Erreur de chargement'); }
+    } catch (err: any) { toast.error(err?.message || 'Erreur de chargement'); }
     finally { setLoading(false); }
   }, []);
 
@@ -69,7 +69,7 @@ export default function ServiceAdminPage() {
       setAgents(prev => prev.map(x => x.id === updated.id ? updated : x));
       toast.success(`Compte ${updated.isActive ? 'activé' : 'désactivé'}`);
       if (selected?.id === updated.id) setSelected(updated);
-    } catch { toast.error('Erreur de mise à jour'); }
+    } catch (err: any) { toast.error(err?.message || 'Erreur de mise à jour'); }
   };
 
   const handleCreate = async () => {
@@ -92,7 +92,7 @@ export default function ServiceAdminPage() {
       setShowCreate(false);
       setForm(emptyForm);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err.message || 'Erreur lors de la création');
+      toast.error(err?.message || 'Erreur lors de la création');
     } finally { setSaving(false); }
   };
 
@@ -105,8 +105,8 @@ export default function ServiceAdminPage() {
       toast.success(`Alerte assignée à ${agent?.firstName} ${agent?.lastName}`);
       setAssignTarget(null);
       setSelectedAgentId('');
-    } catch {
-      toast.error("Erreur lors de l'assignation");
+    } catch (err: any) {
+      toast.error(err?.message || "Erreur lors de l'assignation");
     } finally { setAssigning(false); }
   };
 
