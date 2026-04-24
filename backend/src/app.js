@@ -14,6 +14,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
+  'https://sos-vie-frontend.onrender.com',
 ];
 
 // Manual CORS — must be first, before helmet
