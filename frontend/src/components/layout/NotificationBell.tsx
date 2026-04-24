@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAlerts } from '../../context/AlertContext';
@@ -270,38 +271,50 @@ export default function NotificationBell() {
         }}
       >
         🔔
-        {unreadCount > 0 && (
-          <span
-            style={{
-              position: 'absolute',
-              top: -3,
-              right: -3,
-              minWidth: 18,
-              height: 18,
-              padding: '0 5px',
-              background: '#ef4444',
-              color: '#fff',
-              fontSize: 10,
-              fontWeight: 800,
-              borderRadius: 999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px solid white',
-              boxShadow: '0 0 0 2px rgba(239,68,68,0.25)',
-              lineHeight: 1,
-            }}
-          >
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
+        <AnimatePresence>
+          {unreadCount > 0 && (
+            <motion.span
+              key="badge"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+              style={{
+                position: 'absolute',
+                top: -3,
+                right: -3,
+                minWidth: 18,
+                height: 18,
+                padding: '0 5px',
+                background: '#ef4444',
+                color: '#fff',
+                fontSize: 10,
+                fontWeight: 800,
+                borderRadius: 999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid white',
+                boxShadow: '0 0 0 2px rgba(239,68,68,0.25)',
+                lineHeight: 1,
+              }}
+            >
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </button>
 
+      <AnimatePresence>
       {open && (
-        <div
+        <motion.div
           role="dialog"
           aria-label="Notifications"
           className="notif-panel"
+          initial={{ opacity: 0, y: -8, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -6, scale: 0.97 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           style={{
             position: 'absolute',
             top: 'calc(100% + 10px)',
@@ -317,7 +330,7 @@ export default function NotificationBell() {
             display: 'flex',
             flexDirection: 'column',
             zIndex: 200,
-            animation: 'slideDown 0.22s var(--ease-out)',
+            transformOrigin: 'top right',
           }}
         >
           <div style={{
@@ -453,8 +466,9 @@ export default function NotificationBell() {
               </ul>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

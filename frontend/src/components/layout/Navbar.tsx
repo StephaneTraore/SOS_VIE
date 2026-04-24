@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../common/Logo';
@@ -300,8 +301,13 @@ export default function Navbar() {
                 </span>
                 <span style={{ fontSize: 9, color: '#94a3b8' }}>▼</span>
               </button>
+              <AnimatePresence>
               {menuOpen && (
-                <div
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     position: 'absolute',
                     right: 0,
@@ -313,7 +319,7 @@ export default function Navbar() {
                     minWidth: 220,
                     overflow: 'hidden',
                     zIndex: 200,
-                    animation: 'slideDown 0.22s var(--ease-out)',
+                    transformOrigin: 'top right',
                   }}
                 >
                   <div
@@ -389,8 +395,9 @@ export default function Navbar() {
                   >
                     🚪 Déconnexion
                   </button>
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </div>
 
             {/* Hamburger — mobile only */}
@@ -425,9 +432,25 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile slide-in menu */}
+      <AnimatePresence>
       {mobileOpen && (
-        <div className="nav-mobile-menu" onClick={() => setMobileOpen(false)}>
-          <div className="nav-mobile-panel" onClick={e => e.stopPropagation()}>
+        <motion.div
+          className="nav-mobile-menu"
+          onClick={() => setMobileOpen(false)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          style={{ display: 'block' }}
+        >
+          <motion.div
+            className="nav-mobile-panel"
+            onClick={e => e.stopPropagation()}
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
             {/* User info */}
             <div
               style={{
@@ -535,9 +558,10 @@ export default function Navbar() {
             >
               🚪 Déconnexion
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, Variants } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAlerts } from '../../context/AlertContext';
@@ -6,6 +7,16 @@ import PageLayout from '../../components/layout/PageLayout';
 import { PriorityBadge } from '../../components/common/StatusBadge';
 import { timeAgo, alertTypeIcons, priorityColors } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+
+const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+};
+const staggerItem: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+};
 
 export default function ResponderDashboard() {
   const { user } = useAuth();
@@ -38,8 +49,10 @@ export default function ResponderDashboard() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }} className="page-enter">
 
         {/* ── Header ── */}
-        <div
-          className="animate-fadeInUp"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE_OUT }}
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -115,24 +128,31 @@ export default function ResponderDashboard() {
           >
             🗺️ Voir la carte
           </button>
-        </div>
+        </motion.div>
 
         {/* ── Stats ── */}
-        <div className="grid-4" style={{ gap: 14 }}>
+        <motion.div
+          className="grid-4"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          style={{ gap: 14 }}
+        >
           {[
             { label: 'Alertes actives', value: activeAlerts.length, icon: '🚨', color: '#ef4444', bg: 'linear-gradient(135deg, #fee2e2, #fef2f2)' },
             { label: 'En attente', value: pendingAlerts.length, icon: '⏳', color: '#d97706', bg: 'linear-gradient(135deg, #fef3c7, #fffbeb)' },
             { label: 'Mes interventions', value: myAlerts.filter(a => a.status === 'in_progress').length, icon: '🚑', color: '#10b981', bg: 'linear-gradient(135deg, #d1fae5, #ecfdf5)' },
             { label: 'Résolus', value: resolvedCount, icon: '✅', color: '#0096C7', bg: 'linear-gradient(135deg, #e0f7fa, #f0fdff)' },
-          ].map((s, i) => (
-            <div
+          ].map(s => (
+            <motion.div
               key={s.label}
-              className="card animate-fadeInUp"
+              variants={staggerItem}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="card"
               style={{
                 padding: 'clamp(16px,2vw,22px)',
                 position: 'relative',
                 overflow: 'hidden',
-                animationDelay: `${0.05 + i * 0.05}s`,
               }}
             >
               <div
@@ -181,19 +201,21 @@ export default function ResponderDashboard() {
                   <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginTop: 5 }}>{s.label}</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* ── Pending alerts ── */}
         {pendingAlerts.length > 0 && (
-          <div
-            className="card animate-fadeInUp"
+          <motion.div
+            className="card"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35, ease: EASE_OUT }}
             style={{
               padding: 'clamp(20px,3vw,26px)',
               border: '2px solid #fecaca',
               background: 'linear-gradient(135deg, #fff 0%, #fef2f2 100%)',
-              animationDelay: '0.22s',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
@@ -272,11 +294,17 @@ export default function ResponderDashboard() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ── My active interventions ── */}
-        <div className="card animate-fadeInUp" style={{ padding: 'clamp(20px,3vw,26px)', animationDelay: '0.3s' }}>
+        <motion.div
+          className="card"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.45, ease: EASE_OUT }}
+          style={{ padding: 'clamp(20px,3vw,26px)' }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
             <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', letterSpacing: -0.3 }}>
               Mes interventions actives
@@ -367,20 +395,20 @@ export default function ResponderDashboard() {
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* ── Map shortcut ── */}
-        <div
-          className="card animate-fadeInUp"
+        <motion.div
+          className="card"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ y: -3 }}
+          transition={{ duration: 0.5, delay: 0.55, ease: EASE_OUT }}
           style={{
             padding: 'clamp(20px,3vw,26px)',
             cursor: 'pointer',
-            animationDelay: '0.38s',
-            transition: 'all 0.25s',
           }}
           onClick={() => navigate('/responder/map')}
-          onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
-          onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', letterSpacing: -0.3 }}>
@@ -456,7 +484,7 @@ export default function ResponderDashboard() {
               {activeAlerts.length} alertes actives sur la carte
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </PageLayout>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, Variants } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAlerts } from '../../context/AlertContext';
@@ -6,6 +7,17 @@ import PageLayout from '../../components/layout/PageLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { timeAgo, alertTypeIcons } from '../../utils/helpers';
 import BroadcastFeed from '../../components/citizen/BroadcastFeed';
+
+const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+const staggerItem: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+};
 
 export default function CitizenDashboard() {
   const { user } = useAuth();
@@ -30,8 +42,10 @@ export default function CitizenDashboard() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
         {/* ── Hero Welcome Card ── */}
-        <div
-          className="animate-fadeInUp"
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           style={{
             position: 'relative',
             overflow: 'hidden',
@@ -214,21 +228,28 @@ export default function CitizenDashboard() {
               <div style={{ fontSize: 10, color: '#64748b', marginTop: 5 }}>Appel gratuit</div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Stats Cards ── */}
-        <div className="stats-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+        <motion.div
+          className="stats-grid-3"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}
+        >
           {[
             { label: 'Alertes totales', value: myAlerts.length, icon: '📋', color: '#0096C7', bg: 'linear-gradient(135deg, #e0f7fa, #f0fdff)' },
             { label: 'En cours', value: activeAlerts.length, icon: '🚨', color: '#ef4444', bg: 'linear-gradient(135deg, #fee2e2, #fef2f2)' },
             { label: 'Résolues', value: myAlerts.filter(a => a.status === 'resolved').length, icon: '✅', color: '#10b981', bg: 'linear-gradient(135deg, #d1fae5, #ecfdf5)' },
-          ].map((s, i) => (
-            <div
+          ].map(s => (
+            <motion.div
               key={s.label}
-              className="card animate-fadeInUp"
+              variants={staggerItem}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
+              className="card"
               style={{
                 padding: 'clamp(16px,3vw,22px)',
-                animationDelay: `${0.08 + i * 0.05}s`,
                 position: 'relative',
                 overflow: 'hidden',
               }}
@@ -279,17 +300,27 @@ export default function CitizenDashboard() {
                   <div style={{ fontSize: 11.5, color: '#64748b', fontWeight: 600, marginTop: 5 }}>{s.label}</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* ── Official broadcasts ── */}
-        <div className="animate-fadeInUp" style={{ animationDelay: '0.15s' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
           <BroadcastFeed title="Annonces officielles" />
-        </div>
+        </motion.div>
 
         {/* ── Quick Alert Buttons ── */}
-        <div className="card animate-fadeInUp" style={{ padding: 'clamp(20px,3vw,28px)', animationDelay: '0.2s' }}>
+        <motion.div
+          className="card"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          style={{ padding: 'clamp(20px,3vw,28px)' }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
             <div>
               <h2 style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', letterSpacing: -0.3 }}>Signalement rapide</h2>
@@ -310,11 +341,21 @@ export default function CitizenDashboard() {
               ⚡ TEMPS DE RÉPONSE &lt; 8 MIN
             </span>
           </div>
-          <div className="type-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+          <motion.div
+            className="type-grid"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}
+          >
             {quickActions.map(action => (
-              <button
+              <motion.button
                 key={action.type}
                 onClick={() => navigate(getAlertPath(action.type))}
+                variants={staggerItem}
+                whileHover={{ y: -4, scale: 1.02, boxShadow: `0 12px 28px ${action.color}25`, borderColor: `${action.color}55` }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 22 }}
                 style={{
                   padding: 'clamp(16px,2vw,22px) 12px',
                   border: `1.5px solid ${action.color}20`,
@@ -325,19 +366,8 @@ export default function CitizenDashboard() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   gap: 10,
-                  transition: 'all 0.25s var(--ease-spring)',
                   position: 'relative',
                   overflow: 'hidden',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = `0 12px 28px ${action.color}25`;
-                  e.currentTarget.style.borderColor = `${action.color}55`;
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.borderColor = `${action.color}20`;
                 }}
               >
                 <div
@@ -367,14 +397,20 @@ export default function CitizenDashboard() {
                 >
                   {action.label}
                 </span>
-              </button>
+              </motion.button>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* ── Active alerts ── */}
         {activeAlerts.length > 0 && (
-          <div className="card animate-fadeInUp" style={{ padding: 'clamp(20px,3vw,28px)', animationDelay: '0.28s' }}>
+          <motion.div
+            className="card"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
+            style={{ padding: 'clamp(20px,3vw,28px)' }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span
@@ -471,14 +507,15 @@ export default function CitizenDashboard() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ── Safety Tips ── */}
-        <div
-          className="animate-fadeInUp"
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.48, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            animationDelay: '0.36s',
             padding: 'clamp(20px,3vw,28px)',
             borderRadius: 20,
             background: 'linear-gradient(135deg, #ecfeff 0%, #f0fdfa 100%)',
@@ -548,7 +585,7 @@ export default function CitizenDashboard() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </PageLayout>
   );
