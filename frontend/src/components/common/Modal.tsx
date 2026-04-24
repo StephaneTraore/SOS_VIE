@@ -12,15 +12,9 @@ interface ModalProps {
 export default function Modal({ isOpen, onClose, title, children, size = 'md', footer }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+    const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    if (scrollbarW > 0) document.body.style.paddingRight = `${scrollbarW}px`;
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -32,18 +26,17 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
       onClick={onClose}
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 1000,
         background: 'rgba(0,0,0,0.55)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'max(env(safe-area-inset-top), clamp(8px, 3vw, 20px)) max(env(safe-area-inset-right), clamp(8px, 3vw, 20px)) max(env(safe-area-inset-bottom), clamp(8px, 3vw, 20px)) max(env(safe-area-inset-left), clamp(8px, 3vw, 20px))',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        padding: 12,
         boxSizing: 'border-box',
         animation: 'fadeIn 0.2s ease',
-        overflow: 'hidden',
       }}
     >
       <div
@@ -51,32 +44,34 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="app-modal"
         style={{
           background: '#fff',
-          borderRadius: 'clamp(12px, 2vw, 16px)',
+          borderRadius: 14,
           width: '100%',
           maxWidth: widths[size],
-          maxHeight: '100%',
+          margin: '0 auto',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          animation: 'scaleIn 0.25s ease',
           overflow: 'hidden',
+          animation: 'scaleIn 0.25s ease',
         }}
       >
         {title && (
           <div style={{
-            padding: 'clamp(12px, 3vw, 20px) clamp(14px, 3vw, 24px)',
+            padding: '14px 18px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 10,
             borderBottom: '1px solid #f1f5f9',
-            flexShrink: 0,
+            background: '#fff',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
           }}>
             <h2 style={{
-              fontSize: 'clamp(14px, 2.2vw, 18px)',
+              fontSize: 16,
               fontWeight: 700,
               color: '#1a202c',
               flex: 1,
@@ -107,23 +102,17 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', f
             </button>
           </div>
         )}
-        <div style={{
-          padding: 'clamp(12px, 3vw, 24px)',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          flex: 1,
-          minHeight: 0,
-        }}>
+        <div style={{ padding: 18 }}>
           {children}
         </div>
         {footer && (
           <div style={{
-            padding: 'clamp(10px, 2.5vw, 16px) clamp(14px, 3vw, 24px)',
+            padding: '12px 18px',
             borderTop: '1px solid #f1f5f9',
             background: '#fff',
-            flexShrink: 0,
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 2,
           }}>
             {footer}
           </div>

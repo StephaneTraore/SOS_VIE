@@ -282,34 +282,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .show-mobile { display: none; }
 .hide-tablet { display: block; }
 
-/* ─── Modal (responsive) ─── */
-.app-modal {
-  /* Fallback for browsers without dvh support keeps maxHeight: 100% */
-  max-height: 100dvh;
-}
-@supports (height: 100dvh) {
-  .app-modal { max-height: calc(100dvh - max(env(safe-area-inset-top), 8px) - max(env(safe-area-inset-bottom), 8px)); }
-}
-@media (max-width: 640px) {
-  .app-modal {
-    border-radius: 14px !important;
-    width: 100% !important;
-    /* Give more breathing room by using full available height on phones */
-    max-height: calc(100dvh - 16px) !important;
-  }
-}
-@media (max-width: 480px) {
-  .app-modal {
-    /* Bottom-sheet style on very small screens */
-    align-self: flex-end;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    border-top-left-radius: 18px !important;
-    border-top-right-radius: 18px !important;
-    max-height: calc(100dvh - 32px) !important;
-  }
-}
-
 /* ─── Navbar shell ─── */
 .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
 .nav-mobile-menu {
