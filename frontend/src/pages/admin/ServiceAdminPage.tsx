@@ -7,6 +7,7 @@ import { StatusBadge, PriorityBadge } from '../../components/common/StatusBadge'
 import { User, Alert } from '../../types';
 import { userService } from '../../services/userService';
 import { timeAgo, alertTypeIcons, priorityColors } from '../../utils/helpers';
+import BroadcastCenter from '../../components/admin/BroadcastCenter';
 import toast from 'react-hot-toast';
 
 const CONFIG: Record<string, { color: string; light: string; icon: string; label: string; roleLabel: string; role: string }> = {
@@ -22,7 +23,7 @@ export default function ServiceAdminPage() {
   const { alerts, assignAlert } = useAlerts();
   const cfg = CONFIG[user?.role || ''] || CONFIG.admin_police;
 
-  const [tab, setTab]              = useState<'alerts' | 'agents'>('alerts');
+  const [tab, setTab]              = useState<'alerts' | 'agents' | 'broadcasts'>('alerts');
   const [agents, setAgents]        = useState<User[]>([]);
   const [loading, setLoading]      = useState(true);
   const [search, setSearch]        = useState('');
@@ -154,7 +155,13 @@ export default function ServiceAdminPage() {
             👥 Agents
             <span style={{ background: tab === 'agents' ? cfg.color : '#e2e8f0', color: tab === 'agents' ? 'white' : '#718096', borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>{agents.length}</span>
           </button>
+          <button onClick={() => setTab('broadcasts')}
+            style={{ padding: '9px 20px', borderRadius: 9, border: 'none', background: tab === 'broadcasts' ? '#fff' : 'transparent', color: tab === 'broadcasts' ? '#1a202c' : '#718096', fontSize: 13, fontWeight: tab === 'broadcasts' ? 700 : 500, cursor: 'pointer', boxShadow: tab === 'broadcasts' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', display: 'flex', alignItems: 'center', gap: 7 }}>
+            📢 Annonces
+          </button>
         </div>
+
+        {tab === 'broadcasts' && <BroadcastCenter />}
 
         {/* ── ALERTS TAB ── */}
         {tab === 'alerts' && (

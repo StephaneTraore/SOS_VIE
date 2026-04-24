@@ -17,6 +17,13 @@ export interface MapMarker {
   pulse?: boolean;
 }
 
+export interface RouteInfo {
+  distanceText: string;
+  durationText: string;
+  distanceMeters: number;
+  durationSeconds: number;
+}
+
 interface GoogleMapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -25,8 +32,16 @@ interface GoogleMapProps {
   onMarkerClick?: (id: string) => void;
   onMapClick?: (lat: number, lng: number) => void;
   userLocation?: { lat: number; lng: number } | null;
-  /** Draw a dashed line between userLocation and the selected marker. */
+  /**
+   * When `userLocation` and a selected marker are present, ask Google Directions
+   * for a real road itinerary and render it on the map. Falls back to a dashed
+   * straight line if the request fails.
+   */
   drawRouteToSelected?: boolean;
+  /** Travel mode for the directions (default DRIVING). */
+  travelMode?: 'DRIVING' | 'WALKING' | 'BICYCLING' | 'TRANSIT';
+  /** Called when a route is computed successfully (or reset to null when cleared). */
+  onRouteInfo?: (info: RouteInfo | null) => void;
   style?: React.CSSProperties;
   className?: string;
   /** Optional forced map type: 'roadmap' | 'hybrid' | 'satellite' | 'terrain'. */
@@ -105,6 +120,8 @@ export default function GoogleMap({
   onMapClick,
   userLocation,
   drawRouteToSelected,
+  travelMode = 'DRIVING',
+  onRouteInfo,
   style,
   className,
   mapType = 'roadmap',
@@ -116,6 +133,10 @@ export default function GoogleMap({
   const markerRefs = useRef<Map<string, any>>(new Map());
   const userMarkerRef = useRef<any>(null);
   const routeRef = useRef<any>(null);
+  const directionsRendererRef = useRef<any>(null);
+  const directionsServiceRef = useRef<any>(null);
+  const onRouteInfoRef = useRef(onRouteInfo);
+  onRouteInfoRef.current = onRouteInfo;
   const infoWindowRef = useRef<any>(null);
   const infoContainerRef = useRef<HTMLDivElement | null>(null);
   const [infoReactContent, setInfoReactContent] = useState<React.ReactNode>(null);
@@ -242,30 +263,94 @@ export default function GoogleMap({
     }
   }, [userLocation, isLoaded, google]);
 
-  // Dashed route line (user ↔ selected)
+  // Route (real driving directions via Google Directions API, with polyline fallback)
   useEffect(() => {
     if (!isLoaded || !google || !mapRef.current) return;
-    if (routeRef.current) {
-      routeRef.current.setMap(null);
-      routeRef.current = null;
+
+    const clearRoute = () => {
+      if (routeRef.current) { routeRef.current.setMap(null); routeRef.current = null; }
+      if (directionsRendererRef.current) {
+        directionsRendererRef.current.setMap(null);
+        directionsRendererRef.current = null;
+      }
+    };
+
+    clearRoute();
+    if (!drawRouteToSelected || !userLocation || !selectedId) {
+      onRouteInfoRef.current?.(null);
+      return;
     }
-    if (!drawRouteToSelected || !userLocation || !selectedId) return;
     const sel = markers.find(m => m.id === selectedId);
-    if (!sel) return;
-    routeRef.current = new google.maps.Polyline({
-      map: mapRef.current,
-      path: [userLocation, { lat: sel.lat, lng: sel.lng }],
-      geodesic: true,
-      strokeOpacity: 0,
-      icons: [
-        {
-          icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeColor: sel.color || '#0096C7', scale: 3 },
+    if (!sel) { onRouteInfoRef.current?.(null); return; }
+
+    const strokeColor = sel.color || '#0096C7';
+
+    const drawStraightFallback = () => {
+      routeRef.current = new google.maps.Polyline({
+        map: mapRef.current,
+        path: [userLocation, { lat: sel.lat, lng: sel.lng }],
+        geodesic: true,
+        strokeOpacity: 0,
+        icons: [{
+          icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeColor, scale: 3 },
           offset: '0',
           repeat: '12px',
-        },
-      ],
+        }],
+      });
+    };
+
+    if (!google.maps.DirectionsService || !google.maps.DirectionsRenderer) {
+      drawStraightFallback();
+      return;
+    }
+
+    if (!directionsServiceRef.current) {
+      directionsServiceRef.current = new google.maps.DirectionsService();
+    }
+
+    const renderer = new google.maps.DirectionsRenderer({
+      map: mapRef.current,
+      suppressMarkers: true,
+      preserveViewport: true,
+      polylineOptions: {
+        strokeColor,
+        strokeOpacity: 0.9,
+        strokeWeight: 5,
+      },
     });
-  }, [drawRouteToSelected, selectedId, userLocation, markers, isLoaded, google]);
+    directionsRendererRef.current = renderer;
+
+    let cancelled = false;
+    directionsServiceRef.current.route(
+      {
+        origin: userLocation,
+        destination: { lat: sel.lat, lng: sel.lng },
+        travelMode: google.maps.TravelMode[travelMode],
+      },
+      (result: any, status: any) => {
+        if (cancelled) return;
+        if (status === google.maps.DirectionsStatus.OK && result) {
+          renderer.setDirections(result);
+          const leg = result.routes?.[0]?.legs?.[0];
+          if (leg && onRouteInfoRef.current) {
+            onRouteInfoRef.current({
+              distanceText: leg.distance?.text ?? '',
+              durationText: leg.duration?.text ?? '',
+              distanceMeters: leg.distance?.value ?? 0,
+              durationSeconds: leg.duration?.value ?? 0,
+            });
+          }
+        } else {
+          renderer.setMap(null);
+          directionsRendererRef.current = null;
+          drawStraightFallback();
+          onRouteInfoRef.current?.(null);
+        }
+      },
+    );
+
+    return () => { cancelled = true; };
+  }, [drawRouteToSelected, selectedId, userLocation, markers, isLoaded, google, travelMode]);
 
   const overlayPortal = useMemo(() => {
     if (!infoContainerRef.current) return null;

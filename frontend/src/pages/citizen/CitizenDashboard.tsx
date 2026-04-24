@@ -5,6 +5,7 @@ import { useAlerts } from '../../context/AlertContext';
 import PageLayout from '../../components/layout/PageLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { timeAgo, alertTypeIcons } from '../../utils/helpers';
+import BroadcastFeed from '../../components/citizen/BroadcastFeed';
 
 export default function CitizenDashboard() {
   const { user } = useAuth();
@@ -280,6 +281,11 @@ export default function CitizenDashboard() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* ── Official broadcasts ── */}
+        <div className="animate-fadeInUp" style={{ animationDelay: '0.15s' }}>
+          <BroadcastFeed title="Annonces officielles" />
         </div>
 
         {/* ── Quick Alert Buttons ── */}

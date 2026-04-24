@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useAlerts } from '../../context/AlertContext';
-import { Alert, AlertStatus, Role } from '../../types';
+import { useBroadcasts } from '../../context/BroadcastContext';
+import { Alert, AlertStatus, BroadcastCategory, Role } from '../../types';
 
 type NotifKind = 'new_alert' | 'status_update' | 'assigned';
 
@@ -70,9 +71,21 @@ function formatRelative(isoLike: string | number): string {
   return new Date(t).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
+const broadcastAccent: Record<BroadcastCategory, string> = {
+  info: '#0077B6',
+  warning: '#b45309',
+  danger: '#c53030',
+};
+const broadcastIcon: Record<BroadcastCategory, string> = {
+  info: 'ℹ️',
+  warning: '⚠️',
+  danger: '🚨',
+};
+
 export default function NotificationBell() {
   const { user } = useAuth();
   const { alerts, refreshAlerts } = useAlerts();
+  const { broadcasts, refresh: refreshBroadcasts } = useBroadcasts();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -109,15 +122,21 @@ export default function NotificationBell() {
 
   // Refresh when opening the panel
   useEffect(() => {
-    if (open) { refreshAlerts().catch(() => {}); }
-  }, [open, refreshAlerts]);
+    if (open) {
+      refreshAlerts().catch(() => {});
+      refreshBroadcasts().catch(() => {});
+    }
+  }, [open, refreshAlerts, refreshBroadcasts]);
 
   // Background poll (every 60s) while user is signed in
   useEffect(() => {
     if (!user) return;
-    const id = window.setInterval(() => { refreshAlerts().catch(() => {}); }, 60000);
+    const id = window.setInterval(() => {
+      refreshAlerts().catch(() => {});
+      refreshBroadcasts().catch(() => {});
+    }, 60000);
     return () => window.clearInterval(id);
-  }, [user, refreshAlerts]);
+  }, [user, refreshAlerts, refreshBroadcasts]);
 
   const notifications: NotifItem[] = useMemo(() => {
     if (!user) return [];
@@ -177,9 +196,24 @@ export default function NotificationBell() {
       }
     }
 
+    // Broadcasts visible to everyone (including citizens)
+    for (const b of broadcasts) {
+      items.push({
+        id: `broadcast:${b.id}`,
+        kind: 'status_update',
+        title: b.title,
+        subtitle: b.message.length > 80 ? `${b.message.slice(0, 80)}…` : b.message,
+        eventTime: new Date(b.createdAt).getTime(),
+        alertId: b.id,
+        href: user.role === 'citizen' ? '/citizen/dashboard' : href,
+        icon: broadcastIcon[b.category],
+        accent: broadcastAccent[b.category],
+      });
+    }
+
     items.sort((x, y) => y.eventTime - x.eventTime);
-    return items.slice(0, 25);
-  }, [alerts, user]);
+    return items.slice(0, 30);
+  }, [alerts, broadcasts, user]);
 
   const unreadCount = useMemo(
     () => notifications.filter(n => n.eventTime > lastSeen).length,

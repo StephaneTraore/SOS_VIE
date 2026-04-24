@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Modal from './Modal';
-import GoogleMap, { MapMarker } from './GoogleMap';
+import GoogleMap, { MapMarker, RouteInfo } from './GoogleMap';
 import { getCurrentPosition } from '../../hooks/useGoogleMaps';
 
 interface Props {
@@ -28,9 +28,10 @@ export default function LocationMapModal({
   title = 'Localisation du citoyen',
 }: Props) {
   const [responderPos, setResponderPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) { setRouteInfo(null); return; }
     getCurrentPosition({ lat: location.lat, lng: location.lng }).then(p => {
       if (p.fromGPS) setResponderPos({ lat: p.lat, lng: p.lng });
     });
@@ -59,7 +60,7 @@ export default function LocationMapModal({
   ];
 
   const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`;
-  const distanceKm = responderPos
+  const crowKm = responderPos
     ? (() => {
         const dy = (location.lat - responderPos.lat) * 111;
         const dx = (location.lng - responderPos.lng) * 111 * Math.cos(responderPos.lat * Math.PI / 180);
@@ -82,10 +83,23 @@ export default function LocationMapModal({
             </div>
             <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
               {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
-              {distanceKm !== null && ` · 📏 ${distanceKm.toFixed(1)} km de vous`}
+              {crowKm !== null && ` · 📏 ${crowKm.toFixed(1)} km à vol d'oiseau`}
             </div>
           </div>
         </div>
+
+        {/* Route summary (filled when Google Directions returns) */}
+        {routeInfo && (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', padding: '10px 14px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10 }}>
+            <span style={{ fontSize: 18 }}>🧭</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#0c4a6e' }}>Itinéraire routier</div>
+              <div style={{ fontSize: 12, color: '#0369a1' }}>
+                {routeInfo.distanceText} · ⏱ {routeInfo.durationText}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Map */}
         <div style={{ height: 'clamp(260px, 55vh, 460px)', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
@@ -96,6 +110,7 @@ export default function LocationMapModal({
             selectedId="citizen"
             userLocation={responderPos}
             drawRouteToSelected
+            onRouteInfo={setRouteInfo}
             style={{ borderRadius: 0, height: '100%' }}
           />
         </div>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AlertProvider } from './context/AlertContext';
+import { BroadcastProvider } from './context/BroadcastContext';
 import Logo from './components/common/Logo';
 
 // Auth pages
@@ -148,6 +149,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AlertProvider>
+          <BroadcastProvider>
           <AppRoutes />
           <Toaster
             position="top-right"
@@ -165,6 +167,7 @@ export default function App() {
               error: { style: { background: '#fff5f5', color: '#c53030', border: '1px solid #feb2b2' } },
             }}
           />
+          </BroadcastProvider>
         </AlertProvider>
       </AuthProvider>
     </BrowserRouter>

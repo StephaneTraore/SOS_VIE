@@ -2,11 +2,12 @@ const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-const authRoutes     = require('./routes/authRoutes');
-const alertRoutes    = require('./routes/alertRoutes');
-const userRoutes     = require('./routes/userRoutes');
-const facilityRoutes = require('./routes/facilityRoutes');
-const errorHandler   = require('./middleware/errorHandler');
+const authRoutes      = require('./routes/authRoutes');
+const alertRoutes     = require('./routes/alertRoutes');
+const userRoutes      = require('./routes/userRoutes');
+const facilityRoutes  = require('./routes/facilityRoutes');
+const broadcastRoutes = require('./routes/broadcastRoutes');
+const errorHandler    = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/auth',       authRoutes);
 app.use('/api/alerts',     alertRoutes);
 app.use('/api/users',      userRoutes);
 app.use('/api/facilities', facilityRoutes);
+app.use('/api/broadcasts', broadcastRoutes);
 
 app.use(errorHandler);
 

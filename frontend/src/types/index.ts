@@ -78,3 +78,20 @@ export interface Notification {
   read: boolean;
   createdAt: string;
 }
+
+export type BroadcastCategory = 'info' | 'warning' | 'danger';
+
+export interface Broadcast {
+  id: string;
+  title: string;
+  message: string;
+  category: BroadcastCategory;
+  authorId: string;
+  authorName: string;
+  authorRole: Role | string;
+  authorService: ServiceType | null;
+  isActive: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

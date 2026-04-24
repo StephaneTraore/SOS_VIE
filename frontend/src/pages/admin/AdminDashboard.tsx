@@ -5,6 +5,7 @@ import PageLayout from '../../components/layout/PageLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { timeAgo, alertTypeIcons, alertTypeLabels, priorityColors } from '../../utils/helpers';
 import { AlertType } from '../../types';
+import BroadcastCenter from '../../components/admin/BroadcastCenter';
 
 const MOCK_RESPONDERS = [
   { id: '2', name: 'Ibrahima Baldé', region: 'Conakry', active: 3, resolved: 24, status: 'active' },
@@ -58,6 +59,9 @@ export default function AdminDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Broadcasts to citizens */}
+        <BroadcastCenter />
 
         {/* Charts row */}
         <div className="grid-2-col">
